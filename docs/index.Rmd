@@ -1,0 +1,353 @@
+---
+title: "Market and Macros"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    theme: journal
+---
+
+```{r setup, include=FALSE}
+
+```
+
+```{r, include=FALSE}
+source("final codes.R", local = knitr::knit_global())
+```
+
+
+Employment {data-navmenu="Labor" data-orientation=rows}
+=======================================================================
+
+Column 
+-----------------------------------------------------------------------
+
+### **Employment-population ratio and participation rate**
+
+```{r,message=FALSE,warning=FALSE}
+
+hchart(lb2[which(lb2$title1 %in% c("Employment-population ratio","Civilian labor force participation rate")),], "line", hcaes(x = date, y =value, group = title1))%>%
+  hc_yAxis(title="")%>%
+  hc_xAxis(title="")%>% 
+  hc_title(text = "")%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")%>%
+  hc_add_theme(hc_theme_google())
+
+```
+
+
+### **Employed & Unemployed**
+
+```{r,message=FALSE,warning=FALSE}
+
+hchart(lb2[which(lb2$title1 %in% c("Unemployed","Employed")),], "line", hcaes(x = date, y =value, group = title1))%>%
+  hc_yAxis(title="")%>%
+  hc_xAxis(title="")%>% 
+  hc_title(text = "")%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")%>%
+  hc_add_theme(hc_theme_google())
+
+```
+
+### **Special U Rates**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS13025670"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS14023621"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS14000000"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS13327707"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS13327708"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(lb4 %>% filter(seriesID=="LNS13327709"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  )%>%
+  hc_tooltip(headerFormat = "{point.title}",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+Column 
+-----------------------------------------------------------------------
+### **Quitting and Hiring, selected months**
+
+```{r,message=FALSE,warning=FALSE}
+
+f1<-list(family="Times New Roman",color = "black")
+
+plot_ly(lb31,x=~date,y=~value,type='bar', color=~title1,colors = c("#D95F02", "#7570B3"))%>% 
+  layout(yaxis = list(title = ""), xaxis = list(showgrid = FALSE,title = ""),font=f1)%>%
+  config(displayModeBar = FALSE)
+
+```
+
+
+### **Monthly Quitting, selected Industries(level)**
+
+```{r,message=FALSE,warning=FALSE}
+
+hchart(lb32, "line", hcaes(x = date, y =value, group = title1))%>%
+  hc_yAxis(title="")%>%
+  hc_xAxis(title="")%>% 
+  hc_title(text = "")%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" 
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")%>%
+  hc_rangeSelector(enabled = TRUE,selected =4,inputDateFormat= "%b-%y")
+  
+
+```
+
+
+### **Delta:change from Feb20 and Apr20 to September22**
+```{r,message=FALSE,warning=FALSE}
+
+plot_ly(lb101, color = I("black")) %>%
+  add_segments(x = ~deltaFeb20, xend = ~deltaApr20, y = ~title1, yend = ~title1, showlegend = FALSE) %>%
+  add_markers(x = ~deltaFeb20, y = ~title1, name = "deltaFeb20", color = I("brown4")) %>%
+  add_markers(x = ~deltaApr20, y = ~title1, name = "deltaApr20", color = I("blue")) %>% 
+  layout(  title = "",   xaxis = list(title = "numbers (in thousands)"), margin = list(l = 65))%>%
+  layout(yaxis = list(title = ""), xaxis = list(title = ""), barmode = 'stack',showlegend = TRUE,font=f1)%>%
+  config(displayModeBar = FALSE)
+
+```
+
+
+JOLTS {data-navmenu="Labor" data-orientation=rows}
+=======================================================================
+
+Column 
+-----------------------------------------------------------------------
+### **Unemployed per job opening vs. Unemployment(rate)**
+
+```{r}
+plot0<-bind_rows(jolt_rate[which(jolt_rate$seriesID=="JTS000000000000000UOR"),],lb4[which(lb4$seriesID=="LNS14000000"),])
+
+```
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(plot0 %>% filter(seriesID=="JTS000000000000000UOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(plot0 %>% filter(seriesID=="LNS14000000"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" 
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+### **Quits vs. Hire (level)**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS000000000000000HIL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS000000000000000QUL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" 
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+
+### **Total nonfarm hires and separations rates**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000HIR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000LDR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000OSR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000QUR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000TSR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+Column 
+-----------------------------------------------------------------------
+
+### **Job openings, hires, and separations levels**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS000000000000000JOL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS100000000000000JOL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS900000000000000JOL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS000000000000000TSL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS100000000000000TSL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_level %>% filter(seriesID=="JTS900000000000000TSL"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_rangeSelector(enabled = TRUE,selected =4,inputDateFormat= "%b-%y")%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+
+### **Job openings, hires, and separations rates**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000HIR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE) %>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS100000000000000HIR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS900000000000000HIR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS100000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS900000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS000000000000000TSR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS100000000000000TSR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS900000000000000TSR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_rangeSelector(enabled = TRUE,selected =4,inputDateFormat= "%b-%y")%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+### **Job openings rates by selected industry**
+
+
+```{r,message=FALSE,warning=FALSE}
+
+  highchart() %>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS110099000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE) %>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS230000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS300000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS510000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS510099000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS520000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=FALSE)%>%
+  hc_add_series(jolt_rate %>% filter(seriesID=="JTS700000000000000JOR"),"line", hcaes(x = date, y =value,group=title1),visible=TRUE)%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_rangeSelector(enabled = TRUE,selected =4,inputDateFormat= "%b-%y")%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  )%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+  
+```
+
+
+Inflation & Prices {data-orientation=rows}
+================================================================================
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+### **Consumer-Price index, 12-month change: Selected Sectors**
+
+```{r,message=FALSE,warning=FALSE}
+
+hchart(df6[which(df6$year>2018),], "heatmap",hcaes(x = date , y = title1, value = round(pch12,digits=1)), name = "Index")%>% 
+  hc_colorAxis(stops = color_stops(10, rev(RColorBrewer::brewer.pal(10, "RdYlBu")))) %>% 
+  hc_title(text = "") %>% 
+  hc_legend(layout = "horizontal", verticalAlign = "top", align = "right", valueDecimals = 0)%>%
+  hc_yAxis(title="",labels=list(style=list(fontSize="16px", fontWeight = "bold")))%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  ,opposite=TRUE,title="",visible=FALSE)%>%
+  hc_tooltip(headerFormat = "{point.title}",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+
+
+```
+
+Column {data-width=400}
+-------------------------------------
+
+### **Food, 12-month change**
+
+```{r,message=FALSE}
+
+hchart(df9[which(df9$year>2018),], "heatmap",hcaes(x = date , y = title1, value = round(pch12,digits=1)), name = "Index")%>% 
+  hc_title(text = "") %>% 
+  hc_legend(layout = "horizontal", verticalAlign = "top", align = "right", valueDecimals = 0)%>%
+  hc_yAxis(title="",labels=list(style=list(fontSize="14px", fontWeight = "bold")))%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  ,opposite=TRUE,title="",visible=FALSE)%>%
+  hc_tooltip(headerFormat = "{point.title}",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+```   
+
+### **Energy and Transportation, 12-month change**  
+
+```{r}
+
+hchart(df8[which(df8$year>2018),], "heatmap",hcaes(x = date , y = title1, value = round(pch12,digits=1)), name = "Index")%>% 
+  hc_title(text = "") %>% 
+  hc_legend(layout = "horizontal", verticalAlign = "top", align = "right", valueDecimals = 0)%>%
+  hc_yAxis(title="",labels=list(style=list(fontSize="14px", fontWeight = "bold")))%>%
+  hc_add_theme(hc_theme_google())%>%
+  hc_xAxis(type = "datetime",
+    dateTimeLabelFormats = list(
+      month = "%b-%y" # Month name and short year
+    )
+  ,opposite=TRUE,title="",visible=FALSE)%>%
+  hc_tooltip(headerFormat = "{point.title}",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")
+
+```
+
+### **Consumer-Price index, 12-month change(%)**
+
+```{r,message=FALSE,warning=FALSE}
+hchart(df7, "line", hcaes(x = date, y =round(pch12,2), group = title1))%>%
+  hc_yAxis(title="")%>%
+  hc_xAxis(title="")%>% 
+  hc_title(text = "")%>%
+  hc_navigator(enabled=TRUE)%>%
+  hc_tooltip(headerFormat = "",pointFormat = "{point.periodName} {point.year}: <b>{point.value:,.2f}<b>")%>%
+  hc_add_theme(hc_theme_google())
+  
+```
